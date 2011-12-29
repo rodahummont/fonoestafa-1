@@ -80,15 +80,6 @@ public class NetProto {
 		Log.v(TAG, "uri: " + uri_str);
 		HttpGet request = new HttpGet(uri_str);
 		
-		/*
-		String uri_str = "http://" + server_name + "/denounce";
-		Log.v(TAG, "uri: " + uri_str);
-		HttpPost request = new HttpPost(uri_str);
-		request.addHeader("number", number);
-		request.addHeader("user", username);
-		request.addHeader("pass", password);
-		*/
-		
 		try {
 			HttpResponse resp = client.execute(request);
 			final int status = resp.getStatusLine().getStatusCode();
@@ -108,7 +99,6 @@ public class NetProto {
 		
 		List<NameValuePair> keyval = new ArrayList<NameValuePair>(2);
 		keyval.add(new BasicNameValuePair("number", number));
-		//keyval.add(new BasicNameValuePair("since", last_date));
 		String uri_str = "http://" + server_name + "/lookup?" + URLEncodedUtils.format(keyval, "utf-8");
 		
 		Log.v(TAG, "consultando: |" + uri_str + "|");
@@ -129,6 +119,8 @@ public class NetProto {
 			{
 				result.found = true;
 				result.since = fields[1];
+				result.extra_numbers.add(number);
+				result.extra_dates.add(result.since);
 			}
 			else
 				result.found = false;
@@ -158,10 +150,7 @@ public class NetProto {
 	public static Response getUpdatesForToday(String server_name)
 	{
 		HttpClient client = new DefaultHttpClient();
-		
-		//List<NameValuePair> keyval = new ArrayList<NameValuePair>(1);
-		//keyval.add(new BasicNameValuePair("since", last_date));
-		String uri_str = "http://" + server_name + "/updates"; // ?" + URLEncodedUtils.format(keyval, "utf-8");
+		String uri_str = "http://" + server_name + "/updates";
 		
 		Log.v(TAG, "consultando: |" + uri_str + "|");
 		
