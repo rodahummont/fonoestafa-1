@@ -89,7 +89,7 @@ public class LocalDB extends SQLiteOpenHelper {
 		
 		Log.v(TAG, "num rows: " + c.getCount() + ", num cols: " + c.getColumnCount());
 		c.moveToFirst();
-		String result = c.getString(0);
+		String result = c.getString(0).substring(1, 11);
 		c.close();
 
 		Log.v(TAG, "resultado query: " + result);
