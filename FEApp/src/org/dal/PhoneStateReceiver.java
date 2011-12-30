@@ -1,5 +1,7 @@
 package org.dal;
 
+import java.sql.Date;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 public class PhoneStateReceiver extends BroadcastReceiver {
@@ -20,7 +23,8 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 	private void launch_notif(String number, String since, Context context)
 	{
 		Log.v(TAG, "launch_notif(" + number + ", " + since + ")");
-		NotificationManager notif_manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+		long since_time = Date.valueOf(since).getTime();
+		CharSequence since_relative = DateUtils.getRelativeTimeSpanString(since_time);
 
 		int icon = R.drawable.ic_notif;
 		CharSequence tickerText = context.getText(R.string.caution);
@@ -29,12 +33,13 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 		Notification notification = new Notification(icon, tickerText, when);
 		
 		CharSequence contentTitle = context.getText(R.string.possible_scam); 
-		CharSequence contentText = context.getString(R.string.caution_format, number, since);
+		CharSequence contentText = context.getString(R.string.caution_format, number, since_relative);
 		Intent notificationIntent = new Intent(context, PhoneStateReceiver.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 
 		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 		
+		NotificationManager notif_manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notif_manager.notify(1, notification);
 	}
 	
