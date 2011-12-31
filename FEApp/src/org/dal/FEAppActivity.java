@@ -6,11 +6,15 @@ import java.util.Date;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.CallLog.Calls;
 import android.util.Log;
@@ -24,14 +28,13 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.telephony.PhoneNumberUtils;
 
 
 public class FEAppActivity extends ListActivity {
 	public static final String TAG = "FEActivity";
 	
-	public static final boolean QUERY_STATUS = true;
+	public static final boolean QUERY_STATUS = false;
 	
 	public static final String PREFS_NAME = "FEApp";
 	
@@ -62,13 +65,13 @@ public class FEAppActivity extends ListActivity {
 			
 			view.setOnTouchListener(new View.OnTouchListener() {
 				public boolean onTouch(View v, MotionEvent event) {
-					confirm_denounce_number(number, date_str);
+					confirm_denounce_number(number);
 					return false;
 				}
 			});
 		}
 		
-		public void confirm_denounce_number(String number, String date_str)
+		public void confirm_denounce_number(String number)
 		{
 			final String denounced_number = number;
 			
@@ -101,26 +104,65 @@ public class FEAppActivity extends ListActivity {
 	
 	public void do_denounce(String number)
 	{
-		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-		String server_name = settings.getString("server", "localhost");
-		String username = settings.getString("username", "");
-		String password = settings.getString("password", "");
+		AsyncTask<Object, Void, Integer> denounce_task = new AsyncTask<Object, Void, Integer>() {
+			String server_name, username, password, phone_number;
+			Context context = null;
+			
+			@Override
+			protected void onPreExecute()
+			{
+				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+				server_name = settings.getString("server", "localhost");
+				username = settings.getString("username", "");
+				password = settings.getString("password", "");
+			}
+			
+			@Override
+			protected Integer doInBackground(Object... args)
+			{
+				phone_number = (String)args[0];
+				context = (Context)args[1];
+				int status = NetProto.denounce_number(phone_number, username, password, server_name);
+				Log.v(TAG, "status: " + status);
+				return new Integer(status);
+			}
+			
+			@Override
+			protected void onPostExecute(Integer result)
+			{
+				int status = result;
+				if (true)
+				{
+					CharSequence contentTitle, contentText, tickerText;
+					
+					switch (status) {
+						case NetProto.RESP_OK:
+							tickerText = context.getText(R.string.denounce_done);
+							contentTitle = context.getString(R.string.the_number_NNN, 
+															PhoneNumberUtils.formatNumber(phone_number));
+							contentText = context.getText(R.string.has_been_denounced);
+							break;
+					
+						default:
+							tickerText = context.getText(R.string.connection_error);
+							contentTitle = tickerText;
+							contentText = "";
+					}
+										
+					int icon = R.drawable.ic_notif;
+					long when = System.currentTimeMillis();
+					Notification notification = new Notification(icon, tickerText, when);
+					Intent notificationIntent = new Intent(context, PhoneStateReceiver.class);
+					PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+					notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+					NotificationManager notif_manager = 
+							(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+					notif_manager.notify(1, notification);
+				}
+			}
+		};
 		
-		final int status = NetProto.denounce_number(number, username, password, server_name);
-		
-		CharSequence msg;
-		
-		switch (status) {
-			case NetProto.RESP_OK:
-				msg = this.getText(R.string.denounce_done);
-				break;
-		
-			default:
-				msg = this.getText(R.string.connection_error);
-		}
-		
-		Toast toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-		toast.show();
+		denounce_task.execute(number, this);
 	}
 	
 	
@@ -138,7 +180,6 @@ public class FEAppActivity extends ListActivity {
 			SharedPreferences.Editor editor = settings.edit();
 			editor.putBoolean("configured", true);
 			editor.putString("server", NetProto.DEFAULT_SERVER);
-			//editor.putBoolean("enabled", false);
 			editor.putString("username", "pordefecto");
 			editor.putString("password", "pordefecto");
 			editor.commit();

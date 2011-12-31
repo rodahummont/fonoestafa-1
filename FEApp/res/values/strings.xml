@@ -18,4 +18,6 @@
     <string name="server">Web de Fono Estafa</string>
     <string name="prefs_saved">preferencias guardadas</string>
     <string name="query_on_incoming_calls">consultar ante llamadas entrantes</string>
+    <string name="the_number_NNN">El número %1$S</string>
+    <string name="has_been_denounced">ha sido denunciado</string>
 </resources>
