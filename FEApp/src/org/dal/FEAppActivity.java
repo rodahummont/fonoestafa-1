@@ -33,10 +33,9 @@ import android.telephony.PhoneNumberUtils;
 
 public class FEAppActivity extends ListActivity {
 	public static final String TAG = "FEActivity";
-	
 	public static final boolean QUERY_STATUS = false;
-	
 	public static final String PREFS_NAME = "FEApp";
+	
 	
 	public class CallEntryAdapter extends CursorAdapter {
 		
@@ -207,6 +206,8 @@ public class FEAppActivity extends ListActivity {
         
         ListAdapter adapter = new CallEntryAdapter(this, cursor);
         setListAdapter(adapter);
+        
+        ContactsList.getInstance().dumpContacts(this);
         
         LocalDB db = new LocalDB(this);
         db.logTableContents();

@@ -96,7 +96,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 			db.addUpdates(resp.extra_numbers, resp.extra_dates);
 		}
 	}
-	
+		
 	
 	private static void storeNumber(String number, Context context)
 	{
@@ -127,21 +127,26 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 				Log.v(TAG, "state ringing");
 				LocalDB db = new LocalDB(context);
 				String phone_number = extras.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-				String denounced_since = db.queryNumber(phone_number);
-				Log.v(TAG, "since: " + denounced_since);
-				if (!denounced_since.equals(""))
+				if (!ContactsList.getInstance().isNumberInContacts(context, phone_number))
 				{
-					launch_notif(phone_number, denounced_since, context);
-					updateFromNetwork(context, db);
+					String denounced_since = db.queryNumber(phone_number);
+					Log.v(TAG, "since: " + denounced_since);
+					if (!denounced_since.equals(""))
+					{
+						launch_notif(phone_number, denounced_since, context);
+						updateFromNetwork(context, db);
+					}
+					else {
+						Log.v(TAG, "no esta en db local");
+						if (isUsableWifi(context))
+							queryNumberByNetAndUpdate(phone_number, context, db);
+						else
+							storeNumber(phone_number, context);
+					}
+					db.close();
 				}
-				else {
-					Log.v(TAG, "no esta en db local");
-					if (isUsableWifi(context))
-						queryNumberByNetAndUpdate(phone_number, context, db);
-					else
-						storeNumber(phone_number, context);
-				}
-				db.close();
+				else
+					Log.v(TAG, "numero " + phone_number + " es conocido");
 			}
 			
 			else if (state.equals(TelephonyManager.EXTRA_STATE_IDLE))
