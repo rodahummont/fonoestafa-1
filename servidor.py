@@ -1,10 +1,33 @@
 #!/usr/bin/env python
-from urlparse import urlparse
-import time
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-import SocketServer
-PORT = 8000
 
+# url: http://www.gestalts.net/Create_an_HTTPS_server_in_Python
+#
+# Generate private key
+#	openssl genrsa -out localhost.key 2048
+#
+# Generate CSR (certificate signing request)
+#	openssl req -new -key localhost.key -out localhost.csr
+#
+# Remove Passphrase
+#	cp localhost.key localhost.key.orig
+#	openssl rsa -in localhost.key.orig -out localhost.key
+#
+# Generate Self-Signed Certificate
+#	openssl x509 -req -days 999 -in localhost.csr -signkey localhost.key -out localhost.crt
+#
+# Create the PEM
+#	cat localhost.{key,crt} > localhost.pem
+#
+
+from urlparse import urlparse
+import time, sys, ssl, SocketServer 
+from BaseHTTPServer import HTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+import ssl
+
+
+PORT = 8000
+CERTFILE = 'localhost.pem'
 
 LAST_DAY_NUMBER = 1
 LAST_PHN_NUMBER = 996601
@@ -85,8 +108,13 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 		self.wfile.write(msg)
 
 
-Handler = RodHTTPHandler
-httpd = SocketServer.TCPServer( ("", PORT), Handler )
+if (len(sys.argv) > 1) and (sys.argv[1] == 'https'):
+	httpd = HTTPServer(('', PORT), RodHTTPHandler)
+	httpd.socket = ssl.wrap_socket(httpd.socket, certfile=CERTFILE, server_side=True)
+else:
+	Handler = RodHTTPHandler
+	httpd = SocketServer.TCPServer( ("", PORT), Handler )
+
 
 try:
 	httpd.serve_forever()
