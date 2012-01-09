@@ -34,6 +34,7 @@ import android.telephony.PhoneNumberUtils;
 public class FEAppActivity extends ListActivity {
 	public static final String TAG = "FEActivity";
 	public static final boolean QUERY_STATUS = false;
+	public static final boolean QUERY_STATUS_SSL = false;
 	public static final String PREFS_NAME = "FEApp";
 	
 	
@@ -207,19 +208,25 @@ public class FEAppActivity extends ListActivity {
         ListAdapter adapter = new CallEntryAdapter(this, cursor);
         setListAdapter(adapter);
         
-        ContactsList.getInstance().dumpContacts(this);
+        //ContactsList.getInstance().dumpContacts(this);
         
         LocalDB db = new LocalDB(this);
-        db.logTableContents();
+        //db.logTableContents();
  
         String last_date = db.queryLastDate();
         Log.v(TAG, "ultima fecha: " + last_date);
+        
+        //NetProto.queryDummy();
         
         if (QUERY_STATUS)
         {
         	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         	String server_name = settings.getString("server", "localhost");
-        	String remote_status = NetProto.queryStatus(server_name);
+        		
+        	String remote_status = QUERY_STATUS_SSL ?
+        								NetProto.queryStatusSSL(server_name)
+        							:
+        								NetProto.queryStatus(server_name);
         
         	if (remote_status.equals("EMPTY"))
         	{

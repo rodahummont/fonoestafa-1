@@ -3,20 +3,21 @@
 # url: http://www.gestalts.net/Create_an_HTTPS_server_in_Python
 #
 # Generate private key
-#	openssl genrsa -out localhost.key 2048
+#	openssl genrsa -out 10.0.2.2.key 2048
 #
 # Generate CSR (certificate signing request)
-#	openssl req -new -key localhost.key -out localhost.csr
+#	openssl req -new -key 10.0.2.2.key -out 10.0.2.2.csr
+#	ON, OU, CN deben ser 10.0.2.2
 #
 # Remove Passphrase
-#	cp localhost.key localhost.key.orig
-#	openssl rsa -in localhost.key.orig -out localhost.key
+#	cp 10.0.2.2.key 10.0.2.2.key.orig
+#	openssl rsa -in 10.0.2.2.key.orig -out 10.0.2.2.key
 #
 # Generate Self-Signed Certificate
-#	openssl x509 -req -days 999 -in localhost.csr -signkey localhost.key -out localhost.crt
+#	openssl x509 -req -days 999 -in 10.0.2.2.csr -signkey 10.0.2.2.key -out 10.0.2.2.crt
 #
 # Create the PEM
-#	cat localhost.{key,crt} > localhost.pem
+#	cat 10.0.2.2.{key,crt} > 10.0.2.2.pem
 #
 
 from urlparse import urlparse
@@ -26,8 +27,8 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 import ssl
 
 
-PORT = 8000
-CERTFILE = 'localhost.pem'
+PORT = 443
+CERTFILE = '10.0.2.2.pem'
 
 LAST_DAY_NUMBER = 1
 LAST_PHN_NUMBER = 996601
@@ -54,7 +55,7 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 					num = int(val)
 					if ((num % 2) != 0):
 						print num,'es numero denunciado!!!'
-						return self.response(msg=['si;hoy'] + self.make_dates())
+						return self.response(msg=['si;2012-01-07'] + self.make_dates())
 					else:
 						return self.response(msg='no')
 				else:
@@ -109,9 +110,11 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 
 
 if (len(sys.argv) > 1) and (sys.argv[1] == 'https'):
+	print 'usando https'
 	httpd = HTTPServer(('', PORT), RodHTTPHandler)
 	httpd.socket = ssl.wrap_socket(httpd.socket, certfile=CERTFILE, server_side=True)
 else:
+	print 'servidor en claro'
 	Handler = RodHTTPHandler
 	httpd = SocketServer.TCPServer( ("", PORT), Handler )
 
