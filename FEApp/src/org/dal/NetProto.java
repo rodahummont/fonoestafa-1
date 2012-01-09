@@ -41,6 +41,12 @@ import android.util.Log;
 
 
 public class NetProto {
+	public static final boolean USE_HTTPS = true;
+	
+	private static String prefix()
+	{
+		return USE_HTTPS ? "https://" : "http://";
+	}
 	
 	public static class FullX509TrustManager implements javax.net.ssl.X509TrustManager {
 	    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException 
@@ -67,7 +73,10 @@ public class NetProto {
 	{
 		private javax.net.ssl.SSLSocketFactory FACTORY = HttpsURLConnection.getDefaultSSLSocketFactory();
 
-		public CustomSSLSocketFactory () throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException
+		public CustomSSLSocketFactory () throws KeyManagementException, 
+												NoSuchAlgorithmException, 
+												KeyStoreException, 
+												UnrecoverableKeyException
 		{
 			super(null);
 			try
@@ -168,7 +177,7 @@ public class NetProto {
 		Log.v(TAG, "queryStatus");
 		HttpClient client = makeHTTPClient();
 		
-		String uri_str = "http://" + server_name + "/status";
+		String uri_str = prefix() + server_name + "/status";
 		HttpGet request = new HttpGet(uri_str);
 		try {
 			Log.v(TAG, "ejecutando");
@@ -181,73 +190,25 @@ public class NetProto {
 		}
 		catch (IOException e)
 		{
+			Log.v(TAG, "error: " + e.getMessage());
 			return "";
 		}
 	}
-	
-	public static void queryDummy()
-	{
-		Log.v(TAG, "queryDummy");
-		
-		HttpClient client = makeHTTPClient();
-		
-		//String uri_str = "https://www.google.com/";
-		String uri_str = "https://74.125.47.104/";
-		
-		Log.v(TAG, "uri: " + uri_str);
-		
-		HttpGet request = new HttpGet(uri_str);
-		try {
-			Log.v(TAG, "ejecutando");
-			HttpResponse resp = client.execute(request);
-			Log.v(TAG, "leyendo");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getEntity().getContent()));
-			String line;
-			while ((line = reader.readLine()) != null)
-				Log.v(TAG, "respuesta a status: " + line);
-		}
-		catch (IOException e)
-		{
-			Log.v(TAG, "error");
-		}
-	}
-	
-	public static String queryStatusSSL(String server_name)
-	{
-		Log.v(TAG, "queryStatusSSL");
-		HttpClient client = makeHTTPClient();
-		
-		String uri_str = "https://" + server_name + "/status";
-		HttpGet request = new HttpGet(uri_str);
-		try {
-			Log.v(TAG, "ejecutando");
-			HttpResponse resp = client.execute(request);
-			Log.v(TAG, "leyendo");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(resp.getEntity().getContent()));
-			String line = reader.readLine();
-			Log.v(TAG, "respuesta a status: " + line);
-			return line;
-		}
-		catch (IOException e)
-		{
-			Log.v(TAG, "error...|" + e.getMessage() + "|");
-			return "";
-		}
-	}
+
 	
 	
 	public static int denounce_number(String number, String username, String password, String server_name)
 	{
 		Log.v(TAG, "denunciando { server: |" + server_name + "|, user: |" + username + "|, pass: |" + password + "|");
 		
-		HttpClient client = makeHTTPClient(); //new DefaultHttpClient();
+		HttpClient client = makeHTTPClient();
 		
 		List<NameValuePair> keyval = new ArrayList<NameValuePair>(2);
 		keyval.add(new BasicNameValuePair("number", number));
 		keyval.add(new BasicNameValuePair("user", username));
 		keyval.add(new BasicNameValuePair("password", password));
 		
-		String uri_str = "https://" + server_name + "/denounce?" + URLEncodedUtils.format(keyval, "utf-8");
+		String uri_str = prefix() + server_name + "/denounce?" + URLEncodedUtils.format(keyval, "utf-8");
 		Log.v(TAG, "uri: " + uri_str);
 		HttpGet request = new HttpGet(uri_str);
 		
@@ -265,15 +226,16 @@ public class NetProto {
 		}
 	}
 	
+	
 	public static Response queryNumberAndGetUpdates(String number, String server_name)
 	{
-		HttpClient client = makeHTTPClient(); //new DefaultHttpClient();
+		HttpClient client = makeHTTPClient();
 		
 		List<NameValuePair> keyval = new ArrayList<NameValuePair>(2);
 		keyval.add(new BasicNameValuePair("number", number));
-		String uri_str = "https://" + server_name + "/lookup?" + URLEncodedUtils.format(keyval, "utf-8");
+		String uri_str = prefix() + server_name + "/lookup?" + URLEncodedUtils.format(keyval, "utf-8");
 		
-		Log.v(TAG, "consultando: |" + uri_str + "|");
+		Log.v(TAG, "uri: |" + uri_str + "|");
 		
 		HttpGet request = new HttpGet(uri_str);
 		
@@ -321,8 +283,8 @@ public class NetProto {
 	
 	public static Response getUpdatesForToday(String server_name)
 	{
-		HttpClient client = makeHTTPClient(); //new DefaultHttpClient();
-		String uri_str = "https://" + server_name + "/updates";
+		HttpClient client = makeHTTPClient();
+		String uri_str = prefix() + server_name + "/updates";
 		
 		Log.v(TAG, "consultando: |" + uri_str + "|");
 		
