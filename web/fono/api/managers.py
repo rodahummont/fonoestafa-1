@@ -1,10 +1,16 @@
 from django.db.models import Manager
-from fonoestafa.api.models import *
+from fono.api.models import *
 
-class HustlerManager(Manager):
+class NumberManager(Manager):
+
     @staticmethod
-    def is_a_hustler(number):
+    def lookup(number):
         try:
-            return Hustler.objects.get(number = number, status = True)
-        except:
+            # put more logic here
+            return Number.objects.get(number = number, status = True, denounce__user__status = 1)
+        except Number.DoesNotExist:
             return None
+
+    @staticmethod
+    def updates():
+        return Number.objects.filter(status = True)

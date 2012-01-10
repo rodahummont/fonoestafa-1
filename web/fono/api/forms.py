@@ -1,10 +1,18 @@
 from django import forms
+from fono.api.models import User
+
+# with chilean cellphone regex validator
 
 class DenounceForm(forms.Form):
-    number   = forms.CharField(max_length=100, required=True)
+    number = forms.RegexField(max_length=100, required=True, regex='^\+[0-9]{11}$')
     comments = forms.CharField(required=False)
-    user = forms.CharField(required=False)
-    password = forms.CharField(required=False)
 
-class AskForm(forms.Form):
-    number   = forms.CharField(max_length=100, required=True)
+class LookupForm(forms.Form):
+    number = forms.RegexField(max_length=100, required=True, regex='^\+[0-9]{11}$')
+
+class UserForm(forms.Form):
+    number = forms.RegexField(max_length=100, required=True, regex='^\+[0-9]{11}$')
+
+class ConfirmForm(forms.Form):
+    number = forms.RegexField(max_length=100, required=True, regex='^\+[0-9]{11}$')
+    the_hash = forms.CharField(max_length=100, required=True)

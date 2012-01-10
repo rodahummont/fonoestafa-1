@@ -1,11 +1,12 @@
 from django.conf.urls.defaults import *
-from fonoestafa.api.views import home
-
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from fono.api.views import *
 
 urlpatterns = patterns('',
-    (r'^hustler/', include('fonoestafa.api.urls')),
-    (r'^$', home)
+    url(r'^denounce$', denounce, name='denounce'),
+    url(r'^lookup$', lookup, name='lookup'),
+    (r'^status$', status),
+    (r'^updates$', updates),
+    (r'^register$', register),
+    url(r'^confirm$', confirm, name='confirm'),
+    (r'^$', home),
 )
