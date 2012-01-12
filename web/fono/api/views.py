@@ -9,12 +9,14 @@ import urllib
 
 def denounce(request):
 
-    form = DenounceForm(request.POST)
+    form = DenounceForm(request.GET)
     if form.is_valid():
         number = form.cleaned_data['number']
         comments = form.cleaned_data['comments']
+        the_hash = form.cleaned_data['the_hash']
+        user = get_object_or_404(User, the_hash = the_hash)
         number, is_new = Number.objects.get_or_create( number = number, defaults={'status': 1})
-        denounce = Denounce.objects.create(number = number, comments = comments)
+        denounce = Denounce.objects.create(number = number, comments = comments, user = user)
         return HttpResponse('ok')
     else:
         return HttpResponse('error')

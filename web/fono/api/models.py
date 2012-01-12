@@ -23,7 +23,7 @@ class Denounce(models.Model):
         return  '%d - %s' % (self.id, self.number)
 
 class User(models.Model):
-    number = models.CharField(max_length=100, blank=False)
+    number = models.CharField(max_length=100, blank=False, unique = True)
     status = models.SmallIntegerField(blank=True, default=0)
     created_at = models.DateTimeField(editable=False,auto_now_add=True)
     the_hash = models.CharField(max_length=100, unique = True)
