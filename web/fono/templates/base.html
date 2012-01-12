@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>Solución anti-estafas de código abierto para Android</title>
+		<title>Solución anti-estafas telefonicas de código abierto para Android</title>
 		<link rel="stylesheet" href="/media/css/reset.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="/media/css/style.css" type="text/css" media="screen" />
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
@@ -10,29 +10,11 @@
 
 		<script type="text/javascript">
 			$(document).ready(function() {
-				$('#id_denounceButton').click(function(event) {
-					event.preventDefault();
-					$('#id_searchDiv, #id_denounceDiv, #id_estafador').fadeOut();
-					$('#id_denounceDiv').fadeIn();
-				});
 
 				$('#id_searchButton').click(function(event) {
 					event.preventDefault();
-					$('#id_searchDiv, #id_denounceDiv, #id_estafador').fadeOut();
+					$('#id_searchDiv, #id_estafador').fadeOut();
 					$('#id_searchDiv').fadeIn();
-				});
-
-				$('#id_denounceForm').validate({
-					submitHandler : function(form) {
-						var $form = $('#id_denounceForm')
-						$.ajax({
-							url : $form.attr('action'),
-							data : $form.serialize(),
-							success : function(response) {
-								alert(response);
-							}
-						});
-					}
 				});
 
 				$('#id_searchForm').validate({
@@ -43,12 +25,12 @@
 							data : $form.serialize(),
 							success : function(response) {
 								response_splitted = response.split(';');
-								if(response_splitted[0] == 'si') {
+								if(response_splitted[0] == '1') {
 									fecha = response_splitted[1];
 									$('#id_estafador').fadeIn();
 									$('#ask_response').html('!!!!! Es estadafor, ten cuidado, su primera estafa fue en ' + fecha + '!!!!!');
 								} else {
-									alert('no es estadafor, responde tranquilo');
+									alert('No es estadafor, responde tranquilo');
 								}
 							}
 						});
@@ -61,30 +43,21 @@
 	</head>
 	<body>
 		<div id="body-wrapper">
-			<!-- Wrapper for the radial gradient background -->
 			<div id="sidebar">
 				<div id="sidebar-wrapper">
-					<a href="/"><img id="logo" src="/media/images/logo.png" alt="Logo" /></a>
+					<a href="/" id="logo"><img src="/media/images/logo.png" alt="Logo" /></a>
 					<div id="profile-links" style="text-align:justify;">
-						<p>
-							<a href="#" title="">Browse our code</a> | <a href="#" title="Sign Out">Other link</a>
-						</p>
-						<p>
-							Fono Estafa, es un programa social para android para evitar estafas por teléfono, avisandole al usuario que el número que lo está llamando ha sido denunciado por otros usuarios.
-						</p>
+						<ul>
+							<li class="github"><a href="https://github.com/rodahummont/fonoestafa-1" title="">Explorar el código</a></li>
+							<li class="twitter"><a href="https://twitter.com/joaquin_nunez" title="">Contactanos</a></li>
+						</ul>
 						<p>
 							Algunas recomendaciones:
 						</p>
 						<ul>
-							<li>
-								No dar información.
-							</li>
-							<li>
-								Comunicarse con las autoridades respectivas, dando el numero de la persona que lo contactó.
-							</li>
-							<li>
-								Si vuelve a recibir llamadas del mismo número no conteste.
-							</li>
+							<li>No dar información.</li>
+							<li>Comunicarse con las autoridades respectivas, dando el numero de la persona que lo contactó.</li>
+							<li>Si vuelve a recibir llamadas del mismo número no conteste.</li>
 						</ul>
 					</div>
 				</div>
@@ -92,16 +65,13 @@
 
 			<div id="main-content">
 
-				<h2>Evite estafas</h2>
-				<p id="page-intro">
-					Programa social para evitar estafas por teléfono.
-				</p>
+				<h2>Responda tranquilo.</h2>
+				<p id="page-intro">fonoestafa, es un programa social que te ayudará a evitar estafas telefonicas.</p>
+
+                <p>¿Como funciona?<br/>
+                Cuando un usuario de la comunidad denuncia un número (porqué lo estafaron o intentaron hacerlo),<br/> si este número te llama, serás alertado para que tengas precaución al responder.</p>
+
 				<ul class="shortcut-buttons-set">
-					<li>
-						<a id="id_denounceButton" class="shortcut-button" href="#"><span> <img src="/media/images/Phone.png" alt="icon" />
-							<br />
-							Denunciar estafador </span></a>
-					</li>
 					<li>
 						<a id="id_searchButton" class="shortcut-button" href="#"><span> <img src="/media/images/user_anonymous.png" alt="icon" />
 							<br />
@@ -115,62 +85,6 @@
 				</ul>
 				<div class="clear"></div>
 
-				<!-- Denunciar -->
-				<div id="id_denounceDiv" class="content-box" style="display:none;">
-					<!-- Start Content Box -->
-					<div class="content-box-header">
-						<h3>Denunciar estafador</h3>
-						<div class="clear"></div>
-					</div>
-					<!-- End .content-box-header -->
-					<div class="content-box-content">
-						<div class="tab-content default-tab" id="tab1" style="display:none;">
-							<!-- This is the target div. id must match the href of this div's tab -->
-						</div>
-						<!-- End #tab1 -->
-						<div class="tab-content" id="tab2">
-							<form id="id_denounceForm" action="{% url denounce %}" method="get">
-								<fieldset>
-									<!-- Set class to "column-left" or "column-right" on fieldsets to divide the form into columns -->
-									<p>
-										Antes de denunciar aquí, lea estas recomendaciones:
-									</p>
-									<ul>
-										<li>
-											No dar información.
-										</li>
-										<li>
-											Comunicarse con las autoridades respectivas, dando el numero de la persona que lo contactó.
-										</li>
-										<li>
-											Si vuelve a recibir llamadas del mismo número no conteste.
-										</li>
-									</ul>
-									<p>
-										<label>Número estafador</label>
-										<input class="text-input medium-input required" type="text" name="number" />
-										<br />
-										<small>Ingrese el número que desee denunciar</small>
-									</p>
-									<p>
-										<label>Comentarios</label>
-										<textarea rows="10" name="comments" class="required"></textarea>
-										<br />
-										<small>Cuentale a los demás lo que más puedas para ayudar a otros que eviten estafas.</small>
-									</p>
-									<p>
-										<input class="button" type="submit" value="Denunciar" />
-									</p>
-								</fieldset>
-								<div class="clear"></div><!-- End .clear -->
-							</form>
-						</div>
-						<!-- End #tab2 -->
-					</div>
-					<!-- End .content-box-content -->
-				</div>
-				<!-- End .content-box -->
-				<div class="clear"></div>
 				<!-- Buscador -->
 				<div id="id_searchDiv" class="content-box" style="display:none;">
 					<!-- Start Content Box -->
@@ -211,7 +125,7 @@
 				<div class="content-box" style="display:none;" id="id_estafador">
 					<!-- Start Content Box -->
 					<div class="content-box-header">
-						<h3>Buscar estafador</h3>
+						<h3>Estafador!</h3>
 						<div class="clear"></div>
 					</div>
 					<!-- End .content-box-header -->
@@ -233,12 +147,13 @@
 					</div>
 					<!-- End .content-box-content -->
 				</div>
-				<!-- End .content-box -->
+
+
 				<div id="footer">
-					<small> <!-- Remove this notice or replace it with whatever you want --> another text | <a>lorem ipsum dolor sit amet</a> </small>
-				</div><!-- End #footer -->
+					<small> fonoestafa is open source software </small>
+				</div>
+
 			</div>
-			<!-- End #main-content -->
 		</div>
 	</body>
 </html>

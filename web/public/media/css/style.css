@@ -126,7 +126,8 @@ a.remove-link:hover {
                 }
 
 #sidebar #logo {
-                margin: 40px 0 40px 0;
+                margin: 40px 30px;
+                display:block;
                 }
 
 #sidebar #profile-links {
@@ -241,7 +242,7 @@ a.remove-link:hover {
                 }
                
 #page-intro {
-                font-size: 17px;
+                font-size: 16px;
                 padding: 0 0 20px 0;
                 }
 
@@ -566,3 +567,6 @@ form input[type="radio"] {
 				margin: 0 0 0 5px;
 				}
 
+
+li.github{background-image: url('../images/github.png');padding-left: 20px;background-repeat: no-repeat;line-height: 24px;background-position: left center;}
+li.twitter{background-image: url('../images/twitter.png');padding-left: 20px;background-repeat: no-repeat;line-height: 24px;background-position: left center;}
