@@ -9,7 +9,7 @@ import urllib
 
 def denounce(request):
 
-    form = DenounceForm(request.GET)
+    form = DenounceForm(request.POST)
     if form.is_valid():
         number = form.cleaned_data['number']
         comments = form.cleaned_data['comments']
@@ -45,7 +45,6 @@ def home(request):
 
 def register(request):
     form = UserForm(request.POST)
-    form = UserForm(request.GET)
     if form.is_valid():
         number = form.cleaned_data['number']
         the_hash = str(random.random())[2:]
@@ -53,6 +52,7 @@ def register(request):
         query = '?' + urllib.urlencode({'number': user.number, 'the_hash': user.the_hash})
         url = reverse('confirm') + query
         # @todo: send a sms or email here with the url
+        # @todo: dont show the hash here!
         return HttpResponse('ok;%s' % url)
     else:
         return HttpResponse('error')

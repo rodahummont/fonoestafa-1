@@ -10,6 +10,7 @@ class DenounceForm(forms.Form):
 
 class LookupForm(forms.Form):
     number = forms.RegexField(max_length=12, required=True, regex='^\+[0-9]{11}$')
+    # include_updates = forms.BooleanField(required=False)
 
 class UserForm(forms.Form):
     number = forms.RegexField(max_length=12, required=True, regex='^\+[0-9]{11}$')
