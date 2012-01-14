@@ -249,15 +249,14 @@ public class NetProto {
 			Log.v(TAG, "respuesta |" + first_line + "|");
 			
 			String[] fields = first_line.split(";");
-			if (fields.length == 2)
+			result.found = ((fields.length == 2) && (Integer.parseInt(fields[0]) == 1)); 
+			
+			if (result.found)
 			{
-				result.found = true;
 				result.since = fields[1];
 				result.extra_numbers.add(number);
 				result.extra_dates.add(result.since);
 			}
-			else
-				result.found = false;
 			
 			String line;
 			while ((line = reader.readLine()) != null)
