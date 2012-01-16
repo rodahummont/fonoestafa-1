@@ -131,7 +131,8 @@ public class LocalDB extends SQLiteOpenHelper {
 	public void logTableContents()
 	{
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.query(DB_TABLE, new String[] {KEY_NUMBER, KEY_SINCE}, null, null, null, null, KEY_SINCE);
+		Cursor c = db.query(DB_TABLE, new String[] {KEY_NUMBER, KEY_SINCE}, 
+							null, null, null, null, KEY_SINCE);
 		if (c == null)
 		{
 			Log.v(TAG, "cursor nulo");

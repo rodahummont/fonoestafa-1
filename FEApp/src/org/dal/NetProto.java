@@ -3,6 +3,7 @@ package org.dal;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -25,7 +26,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
@@ -41,7 +44,7 @@ import android.util.Log;
 
 
 public class NetProto {
-	public static final boolean USE_HTTPS = true;
+	public static final boolean USE_HTTPS = false;
 	
 	private static String prefix()
 	{
@@ -203,16 +206,32 @@ public class NetProto {
 		
 		HttpClient client = makeHTTPClient();
 		
-		List<NameValuePair> keyval = new ArrayList<NameValuePair>(2);
-		keyval.add(new BasicNameValuePair("number", number));
+		List<NameValuePair> keyval = new ArrayList<NameValuePair>(3);
+		keyval.add(new BasicNameValuePair("number", "+" + number));
+		//keyval.add(new BasicNameValuePair("comment", "the comment"));
+		keyval.add(new BasicNameValuePair("the_hash", "0883850393838"));
+		
 		keyval.add(new BasicNameValuePair("user", username));
 		keyval.add(new BasicNameValuePair("password", password));
 		
-		String uri_str = prefix() + server_name + "/denounce?" + URLEncodedUtils.format(keyval, "utf-8");
+		//String uri_str = prefix() + server_name + "/denounce?" + URLEncodedUtils.format(keyval, "utf-8");
+		String uri_str = prefix() + server_name + "/denounce";
 		Log.v(TAG, "uri: " + uri_str);
-		HttpGet request = new HttpGet(uri_str);
+		
+		//HttpGet request = new HttpGet(uri_str);
+		HttpPost request = new HttpPost(uri_str);
+	
+		try {
+			UrlEncodedFormEntity uefe = new UrlEncodedFormEntity(keyval, "utf-8");
+			Log.v(TAG, "uefe: " + uefe.toString());
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		try {
+			request.setEntity(new UrlEncodedFormEntity(keyval, "utf-8"));
+			
 			HttpResponse resp = client.execute(request);
 			final int status = resp.getStatusLine().getStatusCode();
 			Log.v(TAG, "status: " + status);

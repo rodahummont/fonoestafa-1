@@ -207,13 +207,7 @@ public class FEAppActivity extends ListActivity {
         ListAdapter adapter = new CallEntryAdapter(this, cursor);
         setListAdapter(adapter);
         
-        //ContactsList.getInstance().dumpContacts(this);
-        
         LocalDB db = new LocalDB(this);
-        //db.logTableContents();
- 
-        String last_date = db.queryLastDate();
-        Log.v(TAG, "ultima fecha: " + last_date);
         
         if (QUERY_STATUS)
         {
