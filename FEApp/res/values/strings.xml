@@ -20,4 +20,6 @@
     <string name="query_on_incoming_calls">consultar ante llamadas entrantes</string>
     <string name="the_number_NNN">El número %1$S</string>
     <string name="has_been_denounced">ha sido denunciado</string>
+    <string name="greeting">saludos, terrícolas</string>
+    <string name="register_ok">resgitro exitoso</string>
 </resources>

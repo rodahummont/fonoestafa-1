@@ -20,9 +20,9 @@ import android.util.Log;
 public class PhoneStateReceiver extends BroadcastReceiver {
 	public static final String TAG = "PhoneStateReceiver";
 	
-	private void launch_notif(String number, String since, Context context)
+	private void launchNotif(String number, String since, Context context)
 	{
-		Log.v(TAG, "launch_notif(" + number + ", " + since + ")");
+		Log.v(TAG, "launchNotif(" + number + ", " + since + ")");
 		long since_time = Date.valueOf(since).getTime();
 		CharSequence since_relative = DateUtils.getRelativeTimeSpanString(since_time);
 
@@ -75,7 +75,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 			if (resp.found)
 			{
 				Log.v(TAG, "since: " + resp.since);
-				launch_notif(number, resp.since, context);
+				launchNotif(number, resp.since, context);
 			}
 
 			db.addUpdates(resp.extra_numbers, resp.extra_dates);
@@ -133,7 +133,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 					Log.v(TAG, "since: " + denounced_since);
 					if (!denounced_since.equals(""))
 					{
-						launch_notif(phone_number, denounced_since, context);
+						launchNotif(phone_number, denounced_since, context);
 						updateFromNetwork(context, db);
 					}
 					else {

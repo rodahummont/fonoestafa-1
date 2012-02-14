@@ -1,44 +1,27 @@
 package org.dal;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
-
-//import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
+
 
 import android.util.Log;
 
@@ -51,68 +34,6 @@ public class NetProto {
 		return USE_HTTPS ? "https://" : "http://";
 	}
 	
-	public static class FullX509TrustManager implements javax.net.ssl.X509TrustManager {
-	    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException 
-	    {
-	        // Oh, I am easy!
-	    	Log.v(TAG, "checkclientTrusted");
-	    }
-
-	    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException 
-	    {
-	        // Oh, I am easy!
-	    	Log.v(TAG, "checkServerTrusted");
-	    }
-
-	    public X509Certificate[] getAcceptedIssuers() 
-	    {
-	    	Log.v(TAG, "getAcceptedIssuers");
-	        return null;
-	    }
-	    
-	};
-	
-	public static class CustomSSLSocketFactory extends org.apache.http.conn.ssl.SSLSocketFactory
-	{
-		private javax.net.ssl.SSLSocketFactory FACTORY = HttpsURLConnection.getDefaultSSLSocketFactory();
-
-		public CustomSSLSocketFactory () throws KeyManagementException, 
-												NoSuchAlgorithmException, 
-												KeyStoreException, 
-												UnrecoverableKeyException
-		{
-			super(null);
-			try
-	        {
-				SSLContext context = SSLContext.getInstance("TLS");
-				TrustManager[] tm = new TrustManager[] { new FullX509TrustManager () };
-				context.init(null, tm, new SecureRandom());
-				FACTORY = context.getSocketFactory();
-	        }
-			catch (Exception e)
-	        {
-				e.printStackTrace();
-	        }
-		}
-
-		public Socket createSocket() throws IOException
-		{
-			return FACTORY.createSocket();
-		}
-		
-		/*
-		public String[] getDefaultCipherSuites()
-		{
-			return FACTORY.getDefaultCipherSuites();
-		}
-		*/
-
-		// TODO: add other methods like createSocket() and getDefaultCipherSuites().
-		// Hint: they all just make a call to member FACTORY 
-	}
-	
-	// -----------------------------
-	// -----------------------------
 	
 	public static class Response
 	{
@@ -135,43 +56,42 @@ public class NetProto {
 	public static final String TAG = "NetProto";
 	public static final int CONNECTION_ERROR = -1;
 	public static final int RESP_OK = 200;
+	public static final String REALM = "fonoestafa";
+	
+	
+	public static void testDigestAuth()
+	{
+		Log.v(TAG, "testDigestAuth");
+		
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(new AuthScope(null, -1, REALM), 
+				new UsernamePasswordCredentials("miusuario", "miclave"));
+		
+		String uri_str = "http://10.0.2.2:8000/status";
+		HttpGet req1 = new HttpGet(uri_str);
+		
+		try {
+			HttpResponse resp1 = client.execute(req1);
+
+			ByteArrayOutputStream v2 = new ByteArrayOutputStream();
+			resp1.getEntity().writeTo(v2);
+			
+			Log.v(TAG, "respuesta (" + resp1.getStatusLine().getStatusCode() + "): " + v2.toString());
+		} catch (ClientProtocolException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 	
 	
 	public static DefaultHttpClient makeHTTPClient()
 	{
-		HttpParams params = new BasicHttpParams();
-		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-		HttpProtocolParams.setContentCharset(params, "utf-8");
-		params.setBooleanParameter("http.protocol.expect-continue", false);
-
-		//registers schemes for both http and https
-		SchemeRegistry registry = new SchemeRegistry();
-		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		DefaultHttpClient client = new DefaultHttpClient();
 		
-		/*
-		final SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
-		sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-		registry.register(new Scheme("https", sslSocketFactory, 443));
-		*/
-		
-		try {
-			registry.register(new Scheme("https", new CustomSSLSocketFactory(), 443));
-		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, registry);
-		return new DefaultHttpClient(manager, params);
+		return client;
 	}
 	
 	
@@ -208,17 +128,14 @@ public class NetProto {
 		
 		List<NameValuePair> keyval = new ArrayList<NameValuePair>(3);
 		keyval.add(new BasicNameValuePair("number", "+" + number));
-		//keyval.add(new BasicNameValuePair("comment", "the comment"));
 		keyval.add(new BasicNameValuePair("the_hash", "0883850393838"));
 		
 		keyval.add(new BasicNameValuePair("user", username));
 		keyval.add(new BasicNameValuePair("password", password));
 		
-		//String uri_str = prefix() + server_name + "/denounce?" + URLEncodedUtils.format(keyval, "utf-8");
 		String uri_str = prefix() + server_name + "/denounce";
 		Log.v(TAG, "uri: " + uri_str);
 		
-		//HttpGet request = new HttpGet(uri_str);
 		HttpPost request = new HttpPost(uri_str);
 	
 		try {

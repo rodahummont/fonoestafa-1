@@ -36,6 +36,9 @@ public class FEAppActivity extends ListActivity {
 	public static final boolean QUERY_STATUS = false;
 	public static final String PREFS_NAME = "FEApp";
 	
+	public static final int DO_REGISTER = 1;
+	
+	
 	
 	public class CallEntryAdapter extends CursorAdapter {
 		
@@ -64,13 +67,13 @@ public class FEAppActivity extends ListActivity {
 			
 			view.setOnTouchListener(new View.OnTouchListener() {
 				public boolean onTouch(View v, MotionEvent event) {
-					confirm_denounce_number(number);
+					confirmDenounceNumber(number);
 					return false;
 				}
 			});
 		}
 		
-		public void confirm_denounce_number(String number)
+		public void confirmDenounceNumber(String number)
 		{
 			final String denounced_number = number;
 			
@@ -79,7 +82,7 @@ public class FEAppActivity extends ListActivity {
 			builder.setCancelable(false);
 			builder.setPositiveButton(ctx.getText(R.string.do_denounce), new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
-			        	   FEAppActivity.this.do_denounce(denounced_number);
+			        	   FEAppActivity.this.doDenounce(denounced_number);
 			   			   FEAppActivity.this.finish();
 			           }
 			       });
@@ -101,7 +104,7 @@ public class FEAppActivity extends ListActivity {
 		}
 	}
 	
-	public void do_denounce(String number)
+	public void doDenounce(String number)
 	{
 		AsyncTask<Object, Void, Integer> denounce_task = new AsyncTask<Object, Void, Integer>() {
 			String server_name, username, password, phone_number;
@@ -165,23 +168,24 @@ public class FEAppActivity extends ListActivity {
 	}
 	
 	
-	public void init_prefs()
+	public boolean preferencesInitialized()
 	{
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 		
-		if (settings.contains("configured") && settings.getBoolean("configured", false))
+		if (settings.contains("server") && !settings.getString("server", "").equals(""))
 		{
 			Log.v(TAG, "aplicacion ya configurada");
+			return true;
 		}
 		else
 		{
 			Log.v(TAG, "aplicacion no tiene config");
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putBoolean("configured", true);
 			editor.putString("server", NetProto.DEFAULT_SERVER);
-			editor.putString("username", "pordefecto");
-			editor.putString("password", "pordefecto");
+			editor.putString("username", "");
+			editor.putString("password", "");
 			editor.commit();
+			return false;
 		}
 	}
 	
@@ -190,9 +194,17 @@ public class FEAppActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
         
-        init_prefs();
+        if (!preferencesInitialized())
+        {
+        	Log.v(TAG, "hay que registrarse");
+        	Intent myIntent = new Intent(this, RegisterActivity.class);
+            startActivityForResult(myIntent, DO_REGISTER);
+        }
+        else
+        	Log.v(TAG, "ya estamos registrados");
+        
+        setContentView(R.layout.main);
         
         Date today = new Date();
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -223,6 +235,8 @@ public class FEAppActivity extends ListActivity {
         }
         
         db.close();
+        
+        NetProto.testDigestAuth();
     }
     
     @Override
@@ -235,7 +249,6 @@ public class FEAppActivity extends ListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
         case R.id.history:
         	Log.v(TAG, "selecionada historial");
         	return true;
@@ -249,5 +262,30 @@ public class FEAppActivity extends ListActivity {
         default:
         	return super.onOptionsItemSelected(item);
         }
+    }
+    
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+    	switch (requestCode)
+    	{
+    	case DO_REGISTER:
+    		switch (resultCode) {
+    		case RegisterActivity.REGISTRATION_OK:
+    			Log.v(TAG, "registracion ok");
+    			break;
+    			
+    		case RegisterActivity.REGISTRATION_CANCELED:
+    			Log.v(TAG, "registracion cancelada");
+    			break;
+    			
+    		default:
+    			// nadaremos
+    		}
+    		break;
+    		
+    	default:
+    		// nadaremos
+    	}
     }
 }
