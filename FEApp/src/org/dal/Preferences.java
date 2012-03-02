@@ -22,19 +22,19 @@ public class Preferences extends Activity {
         
         SharedPreferences settings = getSharedPreferences(FEAppActivity.PREFS_NAME, 0);
 		String server = settings.getString("server", "localhost");
-		String username = settings.getString("username", "");
-		String password = settings.getString("password", "");
+		//String username = settings.getString("username", "");
+		//String password = settings.getString("password", "");
 		boolean service_enabled = PhoneStateReceiver.isReceiverEnabled(this);
 		Log.v(TAG, "servicio activo: " + service_enabled);
 		
 		TextView server_edit = (TextView)findViewById(R.id.server_edit);
-		TextView user_edit = (TextView)findViewById(R.id.username_edit);
-		TextView pass_edit = (TextView)findViewById(R.id.password_edit);
+		//TextView user_edit = (TextView)findViewById(R.id.username_edit);
+		//TextView pass_edit = (TextView)findViewById(R.id.password_edit);
 		CheckBox service_enabled_cb = (CheckBox)findViewById(R.id.service_enabled_checkbox);
 		
 		server_edit.setText(server);
-		user_edit.setText(username);
-		pass_edit.setText(password);
+		//user_edit.setText(username);
+		//pass_edit.setText(password);
 		
 		Button save_button = (Button)findViewById(R.id.save_button);
 		save_button.setOnClickListener(new View.OnClickListener() {
@@ -60,21 +60,21 @@ public class Preferences extends Activity {
 		Log.v(TAG, "save!!!");
 		
 		TextView server_edit = (TextView)findViewById(R.id.server_edit);
-		TextView user_edit = (TextView)findViewById(R.id.username_edit);
-		TextView pass_edit = (TextView)findViewById(R.id.password_edit);
+		//TextView user_edit = (TextView)findViewById(R.id.username_edit);
+		//TextView pass_edit = (TextView)findViewById(R.id.password_edit);
 		
 		String server = server_edit.getText().toString();
 		if (server.startsWith("http://"))
 			server = server.substring(7, server.length());
-		String username = user_edit.getText().toString();
-		String password = pass_edit.getText().toString();
+		//String username = user_edit.getText().toString();
+		//String password = pass_edit.getText().toString();
 		
 		SharedPreferences settings = getSharedPreferences(FEAppActivity.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
-		editor.putBoolean("configured", true);
+		//editor.putBoolean("configured", true);s
 		editor.putString("server", server);
-		editor.putString("username", username);
-		editor.putString("password", password);
+		//editor.putString("username", username);
+		//editor.putString("password", password);
 		editor.commit();
 	}
 }

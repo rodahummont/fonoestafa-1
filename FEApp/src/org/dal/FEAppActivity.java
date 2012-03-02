@@ -1,7 +1,6 @@
 package org.dal;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.AlertDialog;
@@ -28,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.telephony.PhoneNumberUtils;
 
 
@@ -40,22 +40,17 @@ public class FEAppActivity extends ListActivity {
 	
 	
 	
-	public class CallEntryAdapter extends CursorAdapter {
-		
-		private int col_number, col_date;
-		private Context ctx;
-		
+	private class CallEntryAdapter extends CursorAdapter {
 		public CallEntryAdapter(Context context, Cursor c) {
 			super(context, c);
-			this.ctx = context;
-			this.col_number = c.getColumnIndex(Calls.NUMBER);
-			this.col_date = c.getColumnIndex(Calls.DATE);
 		}
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			final String number = cursor.getString(this.col_number);
-			Date date = new Date(cursor.getLong(this.col_date));
+			final int col_number = cursor.getColumnIndex(Calls.NUMBER);
+			final int col_date = cursor.getColumnIndex(Calls.DATE);
+			final String number = cursor.getString(col_number);
+			Date date = new Date(cursor.getLong(col_date));
 			DateFormat df = DateFormat.getDateTimeInstance();
 			final String date_str = df.format(date);
 			
@@ -67,17 +62,28 @@ public class FEAppActivity extends ListActivity {
 			
 			view.setOnTouchListener(new View.OnTouchListener() {
 				public boolean onTouch(View v, MotionEvent event) {
-					confirmDenounceNumber(number);
+					if (FEAppActivity.this.appIsConfirmed())
+					{
+						confirmDenounceNumber(number);
+					}
+					else
+					{
+						Toast toast = Toast.makeText(FEAppActivity.this, "no estamos confirmados", Toast.LENGTH_SHORT);
+						toast.show();
+					}
 					return false;
 				}
 			});
 		}
+
 		
 		public void confirmDenounceNumber(String number)
 		{
 			final String denounced_number = number;
 			
-			AlertDialog.Builder builder = new AlertDialog.Builder(this.ctx);
+			Context ctx = FEAppActivity.this;
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
 			builder.setMessage(ctx.getString(R.string.denounce_question_format, number));
 			builder.setCancelable(false);
 			builder.setPositiveButton(ctx.getText(R.string.do_denounce), new DialogInterface.OnClickListener() {
@@ -115,8 +121,8 @@ public class FEAppActivity extends ListActivity {
 			{
 				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 				server_name = settings.getString("server", "localhost");
-				username = settings.getString("username", "");
-				password = settings.getString("password", "");
+				username = settings.getString("userid", "");
+				password = settings.getString("userpass", "");
 			}
 			
 			@Override
@@ -167,48 +173,77 @@ public class FEAppActivity extends ListActivity {
 		denounce_task.execute(number, this);
 	}
 	
-	
-	public boolean preferencesInitialized()
+	/*
+	private boolean preferencesInitialized()
 	{
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 		
-		if (settings.contains("server") && !settings.getString("server", "").equals(""))
-		{
-			Log.v(TAG, "aplicacion ya configurada");
-			return true;
-		}
-		else
+		if (!settings.contains("server") || settings.getString("server", "").equals(""))
 		{
 			Log.v(TAG, "aplicacion no tiene config");
 			SharedPreferences.Editor editor = settings.edit();
 			editor.putString("server", NetProto.DEFAULT_SERVER);
-			editor.putString("username", "");
-			editor.putString("password", "");
+			editor.putString("userid", "");
+			editor.putString("userpass", "");
+			editor.putBoolean("registering", false);
+			editor.putBoolean("confirmed", false);
 			editor.commit();
 			return false;
+		}
+		
+		return true;
+	}
+	*/
+	
+	
+	private void initializePreferences()
+	{
+		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		
+		if (!settings.contains("server") || settings.getString("server", "").equals(""))
+		{
+			Log.v(TAG, "aplicacion no tiene config");
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putString("server", NetProto.DEFAULT_SERVER);
+			editor.putString("userid", "");
+			editor.putString("userpass", "");
+			editor.putBoolean("registering", false);
+			editor.putBoolean("confirmed", false);
+			editor.commit();
 		}
 	}
 	
 	
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        if (!preferencesInitialized())
+	public boolean appIsRegistering()
+	{
+		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		return settings.getBoolean("registering", false);
+	}
+	
+	public boolean appIsConfirmed()
+	{
+		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		return settings.getBoolean("confirmed", false);
+	}
+	
+	
+	@Override
+	public void onResume()
+	{
+		Log.v(TAG, "onResume!!!!");
+		super.onResume();
+		
+		if (!appIsRegistering())
         {
         	Log.v(TAG, "hay que registrarse");
         	Intent myIntent = new Intent(this, RegisterActivity.class);
             startActivityForResult(myIntent, DO_REGISTER);
+            Log.v(TAG, "....");
         }
         else
-        	Log.v(TAG, "ya estamos registrados");
+        	Log.v(TAG, "ya estamos registrados/regsitrando");
         
         setContentView(R.layout.main);
-        
-        Date today = new Date();
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Log.v(TAG, "today: " + fmt.format(today));
         
         Cursor cursor = getContentResolver().query(Calls.CONTENT_URI,
         		new String[] {Calls._ID, Calls.NUMBER, Calls.DATE}, 
@@ -235,8 +270,54 @@ public class FEAppActivity extends ListActivity {
         }
         
         db.close();
+	}
+	
+	
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         
-        NetProto.testDigestAuth();
+        initializePreferences();
+        
+        /*
+        if (!appIsRegistering())
+        {
+        	Log.v(TAG, "hay que registrarse");
+        	Intent myIntent = new Intent(this, RegisterActivity.class);
+            startActivityForResult(myIntent, DO_REGISTER);
+        }
+        else
+        	Log.v(TAG, "ya estamos registrados/regsitrando");
+        
+        setContentView(R.layout.main);
+        
+        Cursor cursor = getContentResolver().query(Calls.CONTENT_URI,
+        		new String[] {Calls._ID, Calls.NUMBER, Calls.DATE}, 
+        		Calls.TYPE + " = " + Calls.INCOMING_TYPE, 
+        		null, Calls.DEFAULT_SORT_ORDER + " LIMIT 5");
+        startManagingCursor(cursor);
+        
+        ListAdapter adapter = new CallEntryAdapter(this, cursor);
+        setListAdapter(adapter);
+        
+        LocalDB db = new LocalDB(this);
+        
+        if (QUERY_STATUS)
+        {
+        	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        	String server_name = settings.getString("server", "localhost");
+        	
+        	String remote_status = NetProto.queryStatus(server_name);
+        	if (remote_status.equals("EMPTY"))
+        	{
+        		Log.v(TAG, "limpiando la tabla local");
+        		db.cleanDatabase();
+        	}
+        }
+        
+        db.close();
+        */
     }
     
     @Override
@@ -277,6 +358,10 @@ public class FEAppActivity extends ListActivity {
     			
     		case RegisterActivity.REGISTRATION_CANCELED:
     			Log.v(TAG, "registracion cancelada");
+    			break;
+    			
+    		case RegisterActivity.REGISTRATION_FAILED:
+    			Log.v(TAG, "registracion fallada");
     			break;
     			
     		default:

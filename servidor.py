@@ -27,7 +27,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 import ssl
 
 
-PORT = 443
+PORT = 8000
 CERTFILE = '10.0.2.2.pem'
 
 LAST_DAY_NUMBER = 1
@@ -45,6 +45,7 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 
 	
 	def do_GET(self):
+		print 'do_GET'
 		args = urlparse(self.path)
 		if args.path == '/lookup':
 			query = args.query.split('&')
@@ -88,21 +89,46 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 			return SimpleHTTPRequestHandler.do_GET(self)
 
 
-	def do_POST(self):
-		args = urlparse(self.path)
-		if args.path != '/create':
-			return self.response(code=400)
+	def send401(self):
+		H = {
+			'WWW-Authenticate': 'Digest realm="fonoestafa", qop="auth,auth-int", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", opaque="5ccc069c403ebaf9f0171e9517f40e41"'
+		}
+		return self.response(msg='', code=401, headers=H)
 
-		print 'llego un POST!!'
-		print '...'
-		print self.headers
-		return self.response(msg='OK')
+
+	def is_authorized(self):
+		s = self.headers.get('Authorization', '')
+		if s == '' or s[:7] != 'Digest ':
+			return False
+		return True
+
+	def do_POST(self):
+		print 'do_POST'
+		args = urlparse(self.path)
+		if args.path == '/create':
+			return self.response(msg='OK')
+		elif args.path == '/register':
+			print 'register...'
+			print 'headers:', self.headers
+			return self.response(msg='OK;dabalearrozalazorraelabad', code=200) 
+		elif args.path == '/register_confirm':
+			print 'register_confirm...'
+			print 'headers:', self.headers
+			if not self.is_authorized():
+				print 'no autorizao'
+				self.send401()
+			else:
+				print '----------ok'
+				return self.response(msg='OK')
+		else:
+			return self.response(code=404)
 
 		
 
-	def response(self, msg='', code=200, header=('Content-type', 'text/plain')):
+	def response(self, msg='', code=200, headers={'Content-type': 'text/plain'}):
 		self.send_response(code)
-		self.send_header(header[0], header[1])
+		for key, val in headers.items():
+			self.send_header(key, val)
 		self.end_headers()
 		if type(msg) == list:
 			msg = '\n'.join(msg)
