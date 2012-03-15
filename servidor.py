@@ -120,6 +120,17 @@ class RodHTTPHandler(SimpleHTTPRequestHandler):
 			else:
 				print '----------ok'
 				return self.response(msg='OK')
+		elif args.path == '/denounce':
+			print 'denuncia!!!'
+			if not self.is_authorized():
+				print 'no autorizao'
+				self.send401()
+			else:
+				print '----------ok'
+				query = args.query.split(',')
+				for param in query:
+					print ' ', param
+				return self.response()
 		else:
 			return self.response(code=404)
 

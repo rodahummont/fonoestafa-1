@@ -38,7 +38,7 @@ public class RegisterActivity extends Activity {
 					Log.v(TAG, "registracion enviada, recibido password: " + userpass);
 					SharedPreferences.Editor edit = settings.edit();
 					edit.putString("userid", phone_number_hash);
-					edit.putString("userid", userpass);
+					edit.putString("userpass", userpass);
 					edit.putBoolean("registering", true);
 					
 					if (SEND_REGISTRATION_NOW && 

@@ -123,6 +123,9 @@ public class FEAppActivity extends ListActivity {
 				server_name = settings.getString("server", "localhost");
 				username = settings.getString("userid", "");
 				password = settings.getString("userpass", "");
+				Log.v(TAG, "onPreExecute");
+				Log.v(TAG, "userid: " + username);
+				Log.v(TAG, "password: " + password);
 			}
 			
 			@Override
